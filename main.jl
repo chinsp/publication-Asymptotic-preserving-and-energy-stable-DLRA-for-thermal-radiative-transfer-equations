@@ -184,3 +184,74 @@ fig7
 #########################################################################
 #            The numerical experiments for epsilon = 1e-5               #
 #########################################################################
+Nx = 201;
+N = 100;
+epsilon = 1e-5;
+regime = "parabolic"
+s = Settings(Nx,N,epsilon,regime);
+solver = solverMarshak(s);
+
+s = Settings(Nx,N,epsilon,regime);
+solver = solverMarshak(s);
+
+t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(solver);
+
+t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
+
+s.r = 1;
+t_raBUG, h_raBUG, g_raBUG, T_raBUG, energy_raBUG, ranks_raBUG, Resmass_raBUG = solveBUG_rankadaptive(solver);
+
+
+fig4, ax4 = subplots(figsize=(15, 12), dpi=200);
+ax4.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"P_{100}");
+ax4.plot(solver.x, (s.aRad * s.c .* T_BUG + epsilon^2 .* h_BUG),"--",color = "orange", label = L"BUG_{1}");
+ax4.plot(solver.x, (s.aRad * s.c .* T_raBUG + epsilon^2 .* h_raBUG),"--",color = "purple", label = "raBUG");
+ax4.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
+ax4.set_xlim([0,3]);
+ax4.set_xticks(range(0,3, step=1.0));
+ax4.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
+ax4.set_xlabel(L"x");
+ax4.legend();
+fig2.canvas.draw();
+fig4
+# savefig("Scalar_flux_lowrank.pdf")
+
+t = collect(range(0,s.Tend,size(energy_Full)[1]));
+
+fig5, ax5 = subplots(figsize=(15, 12), dpi=200);
+start = 1;
+ax5.semilogy(t[start:end],energy_Full[start:end],"--",color = "red", label = L"P_{100}");
+ax5.semilogy(t[start:end],energy_BUG[start:end],"--",color = "orange", label = L"BUG_{1}");
+ax5.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = "raBUG");
+ax5.legend();
+ax5.set_xlim([0,s.Tend]);
+ax5.set_ylabel(L"energy");
+ax5.set_xlabel(L"t");
+fig5.canvas.draw();
+fig5
+# savefig("energy.pdf")
+
+
+fig6,ax6 = subplots(figsize = (15,12),dpi=200);
+ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"P_{100}");
+ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"BUG_{1}");
+ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = "raBUG");
+ax6.set_xlim([0,s.Tend]);
+ax6.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
+ax6.set_xlabel(L"t");
+ax6.legend();
+fig6.canvas.draw();
+fig6
+# savefig("raBUG_ranks.pdf")
+
+fig7, ax7 = subplots(figsize=(15, 12), dpi=200);
+ax7.plot(t[1:end],ranks_raBUG,"-",color = "purple", label = "rank");
+ax7.set_xlim([0,s.Tend]);
+ax7.set_ylim([0,maximum(ranks_raBUG)+1]);
+ax7.set_yticks(range(1,maximum(ranks_raBUG)+1,step=2))
+ax7.set_ylabel("rank");
+ax7.set_xlabel(L"t");
+# ax4.legend();
+fig7.canvas.draw();
+fig7
+# savefig("raBUG_ranks.pdf")
