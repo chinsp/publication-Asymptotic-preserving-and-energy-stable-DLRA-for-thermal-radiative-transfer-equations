@@ -41,7 +41,7 @@ t_15, h_15, g_15, T_15, energy_15 = solveFullMacroMicro(solver);
 
 
 #########################################################################
-#                  Setting up the spatial grid                          #
+#            The numerical experiments for epsilon = 1.0                #
 #########################################################################
 N = 100;
 
@@ -179,3 +179,8 @@ ax7.set_xlabel(L"t");
 fig7.canvas.draw();
 fig7
 # savefig("raBUG_ranks.pdf")
+
+
+#########################################################################
+#            The numerical experiments for epsilon = 1e-5               #
+#########################################################################
