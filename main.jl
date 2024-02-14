@@ -156,8 +156,8 @@ fig5
 
 fig6,ax6 = subplots(figsize = (15,12),dpi=200);
 ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"P_{100}");
-ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = "BUG");
-ax6.semilogy(t[1:end],Resmass_raBUG,"--", color = "purple", label = "raBUG");
+ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"BUG_{5}");
+ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = "raBUG");
 ax6.set_xlim([0,s.Tend]);
 ax6.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax6.set_xlabel(L"t");
