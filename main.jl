@@ -11,96 +11,63 @@ rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["font.size"] = 30
 
 close("all")
-epsilon = 1.0;
 
-# Nx = 501;
-# N = 5;
-# s = Settings(Nx,N,epsilon,"hyperbolic");
-# solver = solverMarshak(s);
-# t_ex5, h_ex5, g_ex5, T_ex5, energy_ex5 = solveFullMacroMicroExplicit(solver);
-
-
-# Nx = 501;
-# N = 15;
-# s = Settings(Nx,N,epsilon,"hyperbolic");
-# solver = solverMarshak(s);
-# t_ex15, h_ex15, g_ex15, T_ex15, energy_ex15 = solveFullMacroMicroExplicit(solver);
-
-Nx = 501;
+#########################################################################
+#                  Computing the Rosseland limit                        #
+#########################################################################
+Nx = 201;
 N = 100;
-s = Settings(Nx,N,epsilon,"hyperbolic");
-s = Settings(Nx,N,epsilon,"hyperbolic");
+epsilon = 1e-5;
+regime = "parabolic"
+s = Settings(Nx,N,epsilon,regime);
+solver = solverMarshak(s);
+t,T = solveRosselandLimit(solver);
+#########################################################################
+
+epsilon = 1.0;
+regime = "hyperbolic"
+Nx = 501;
+
+N = 5;
+s = Settings(Nx,N,epsilon,regime);
+solver = solverMarshak(s);
+t_5, h_5, g_5, T_5, energy_5 = solveFullMacroMicro(solver);
+
+
+N = 15;
+s = Settings(Nx,N,epsilon,regime);
+solver = solverMarshak(s);
+t_15, h_15, g_15, T_15, energy_15 = solveFullMacroMicro(solver);
+
+
+#########################################################################
+#                  Setting up the spatial grid                          #
+#########################################################################
+N = 100;
+
+s = Settings(Nx,N,epsilon,regime);
 solver = solverMarshak(s);
 
-# t, T = solveRosselandLimitExplicit(solver);
+t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(solver);
 
-# t_ex, h_ex, g_ex, T_ex, energy_ex = solveFullMacroMicro_MS(solver);
-t_ex, h_ex, g_ex, T_ex, energy_ex, mass_ex = solveFullMacroMicroExplicit(solver);
+t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
 
-t_exBUG, _, _, T_exBUG, _, _ = solveBUGintegratorExplicit(solver);
+s.r = 15;
+r_BUGH = s.r;
+t_BUGH, h_BUGH, g_BUGH, T_BUGH, energy_BUGH, Resmass_BUGH = solveBUGintegrator(solver);
 
-# fig1,ax1 = subplots(figsize=(15,12), dpi = 200);
-# fig2,ax2 = subplots(figsize=(15,12), dpi = 200);
-# rank = [1,2,4,5,8,10,15];
-# error = zeros(length(rank));
-# i = 1;
-# for r in rank
-#     s.r = r;
-#     r_BUG = s.r;
-#     # t_exBUG, h_exBUG, g_exBUG, T_exBUG, energy_exBUG = solveBUGintegrator_MS(solver);
-#     t_exBUG, _, _, T_exBUG, _, _ = solveBUGintegratorExplicit(solver);
-#     ax1.plot(solver.x,T_exBUG,"--",label = string("r = ", r_BUG));
-#     error[i] = LinearAlgebra.norm(T_ex-T_exBUG)/LinearAlgebra.norm(T_ex);
-#     global i = i+1;
-# end
-# ax1.plot(solver.x,T_ex,"--",label = "Full");
-# ax1.set_xlim([0,3]);
-# ax1.set_xticks(range(0,3, step=0.5));
-# ax1.legend()
+s.r = 1;
+t_raBUG, h_raBUG, g_raBUG, T_raBUG, energy_raBUG, ranks_raBUG, Resmass_raBUG = solveBUG_rankadaptive(solver);
 
 
-# ax2.plot(rank,error)
-
-# s.r = 15;
-# r_BUGH = s.r;
-# t_exBUGH, h_exBUGH, g_exBUGH, T_exBUGH, energy_exBUGH = solveBUGintegratorExplicit(solver);
-
-# s.r = 1;
-# t_exraBUG, h_exraBUG, g_exraBUG, T_exraBUG, energy_exraBUG, ranks_exraBUG, mass_exraBUG = solveExplicitBUG_rankadaptive(solver);
-
-
-# x1 = collect(range(s.a,s.b,size(T)[1]));
+x1 = collect(range(s.a,s.b,size(T)[1]));
 
 fig1, ax1 = subplots(figsize=(15, 12), dpi=200);
-# ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax1.plot(solver.x, T_ex ,"--",color = "red", label = string(L"P_{100}"));
-ax1.plot(solver.x, T_exBUG ,"--",color = "green", label = string(L"P_{5}"));
-# ax1.plot(solver.x, T_ex15 ,"--",color = "brown", label = string(L"P_{15}"));
+ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
+ax1.plot(solver.x, T_Full ,"--",color = "red", label = string(L"P_{100}"));
+ax1.plot(solver.x, T_5 ,"--",color = "green", label = string(L"P_{5}"));
+ax1.plot(solver.x, T_15 ,"--",color = "brown", label = string(L"P_{15}"));
 
-# ax1.plot(-s.alim.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# ax1.plot(s.alim.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# ax1.set_ylim([minimum(T_ex)-1.0,maximum(T_ex)+5.0]);
-# ax1.set_xlim([0,3]);
-# ax1.set_xticks(range(0,3, step=0.5));
-# ax1.set_ylabel("Temperature");
-# ax1.set_xlabel(L"x");
-# ax1.legend();
-# fig1.canvas.draw();
-# fig1
-# savefig("Temperature_moment.pdf")
-
-fig1, ax1 = subplots(figsize=(15, 12), dpi=200);
-# ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax1.plot(solver.x, T_ex ,"--",color = "red", label = string(L"P_{100}"));
-ax1.plot(solver.x, T_exBUG ,"--",color = "orange", label = string(L"BUG_{5}"));
-# ax1.plot(solver.x, T_exBUGH,"--",color = "blue", label = string(L"BUG_{15}"));
-
-# ax1.plot(solver.x, T_exraBUG ,"--",color = "purple", label = string("raBUG"));
-# ax1.plot(solver.x, T_exraBUG ,"--",color = "purple", label = string("raBUG"));
-
-# ax1.plot(-s.alim.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# ax1.plot(s.alim.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# ax1.set_ylim([minimum(T_ex)-1.0,maximum(T_ex)+5.0]);
 ax1.set_xlim([0,3]);
 ax1.set_xticks(range(0,3, step=0.5));
 ax1.set_ylabel("Temperature");
@@ -110,111 +77,105 @@ fig1.canvas.draw();
 fig1
 # savefig("Temperature_moment.pdf")
 
-# h0,g0,T0 = IC(s);
+fig2, ax2 = subplots(figsize=(15, 12), dpi=200);
+ax2.plot(x1, T,color = "black", "--", label = "Rosseland limit");
+ax2.plot(solver.x, T_Full ,"--",color = "red", label = string(L"P_{100}"));
+ax2.plot(solver.x, T_BUG ,"--",color = "orange", label = string(L"BUG_{5}"));
+ax2.plot(solver.x, T_BUGH,"--",color = "blue", label = string(L"BUG_{15}"));
 
-# fig1, ax1 = subplots(figsize=(15, 12), dpi=200);
-# # ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-# # ax1.plot(solver.x, T0 ,"--",color = "gray", label = string(L"t = 0"));
-# ax1.plot(solver.x, T_ex ,"--",color = "red", label = string(L"P_{100}"));
+ax2.plot(solver.x, T_raBUG ,"--",color = "purple", label = string("raBUG"));
 
-# ax1.plot(solver.x, T_exBUG ,"--",color = "orange", label = string(L"BUG_{5}"));
-# # # ax1.plot(solver.x, T_exBUGH,"--",color = "blue", label = string(L"BUG_{15}"));
+ax2.set_ylim([minimum(T_Full)-1.0,maximum(T_Full)+5.0]);
+ax2.set_xlim([0,3]);
+ax2.set_xticks(range(0,3, step=0.5));
+ax2.set_ylabel("Temperature");
+ax2.set_xlabel(L"x");
+ax2.legend();
+fig2.canvas.draw();
+fig2
+# savefig("Temperature_low_rank.pdf")
 
-# ax1.plot(solver.x, T_exraBUG ,"--",color = "purple", label = string("raBUG"));
 
-# # ax1.plot(-1.0.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# # ax1.plot(0.5.*ones(100),collect(range(-10,1000,100)),"--",color = "black");
-# # ax1.set_ylim([minimum(T0)-1.0,maximum(T0)+10.0]);
-# ax1.set_xlim([0,3]);
-# ax1.set_xticks(range(0,3, step=0.5));
-# ax1.set_ylabel("Temperature");
-# ax1.set_xlabel(L"x");
-# # ax1.set_title(string(L"\sigma_{a} = ", s.sigmaA))
-# ax1.legend();
-# fig1.canvas.draw();
-# fig1
-# savefig("Temperature_lowrank.pdf")
+fig3, ax3 = subplots(figsize=(15, 12), dpi=200);
+ax3.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"P_{100}");
+ax3.plot(solver.x, (s.aRad * s.c .* T_5 + epsilon^2 .* h_5),"--",color = "green", label = L"P_{5}");
+ax3.plot(solver.x, (s.aRad * s.c .* T_15 + epsilon^2 .* h_15),"--",color = "brown", label = L"P_{15}");
 
-# fig2, ax2 = subplots(figsize=(15, 12), dpi=200);
-# ax2.plot(solver.x, (s.aRad * s.c .* T_ex + epsilon^2 .* h_ex),"--",color = "red", label = L"P_{100}");
-# ax2.plot(solver.x, (s.aRad * s.c .* T_ex5 + epsilon^2 .* h_ex5),"--",color = "green", label = L"P_{5}");
-# ax2.plot(solver.x, (s.aRad * s.c .* T_ex15 + epsilon^2 .* h_ex15),"--",color = "brown", label = L"P_{15}");
-# ax2.plot(-s.alim.*ones(100),collect(range(-100,200,100)),"--",color = "black");
-# ax2.plot(s.alim.*ones(100),collect(range(-100,200,100)),"--",color = "black");
-# ax2.set_ylim([minimum(s.aRad * s.c .* T_ex + epsilon^2 .* h_ex)-1.0,maximum(s.aRad * s.c .* T_ex + epsilon^2 .* h_ex)+5.0]);
-# ax2.set_xlim([0,3]);
-# ax2.set_xticks(range(0,3, step=0.5));
-# ax2.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
-# ax2.set_xlabel(L"x");
-# ax2.legend();
-# fig2.canvas.draw();
-# fig2
+ax3.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
+ax3.set_xlim([0,3]);
+ax3.set_xticks(range(0,3, step=0.5));
+ax3.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
+ax3.set_xlabel(L"x");
+ax3.legend();
+fig3.canvas.draw();
+fig3
 # savefig("Scalar_flux_moment.pdf")
 
-# fig2, ax2 = subplots(figsize=(15, 12), dpi=200);
-# ax2.plot(solver.x, s.aRad * s.c .* T0 + epsilon^2 .* h0 ,"--",color = "gray", label = string(L"t = 0"));
-# ax2.plot(solver.x, (s.aRad * s.c .* T_ex + epsilon^2 .* h_ex),"--",color = "red", label = L"P_{100}");
-# ax2.plot(solver.x, (s.aRad * s.c .* T_exBUG + epsilon^2 .* h_exBUG),"--",color = "orange", label = L"BUG_{5}");
-# # ax2.plot(solver.x, (s.aRad * s.c .* T_exBUGH + epsilon^2 .* h_exBUGH),"--",color = "blue", label = L"BUG_{15}");
-# ax2.plot(solver.x, (s.aRad * s.c .* T_exraBUG + epsilon^2 .* h_exraBUG),"--",color = "purple", label = "raBUG");
-# ax2.plot(-1.0.*ones(100),collect(range(-100,1000,100)),"--",color = "black");
-# ax2.plot(0.5.*ones(100),collect(range(-100,1000,100)),"--",color = "black");
-# ax2.set_ylim([minimum(s.aRad * s.c .* T0 + epsilon^2 .* h0)-1.0,maximum(s.aRad * s.c .* T0 + epsilon^2 .* h0)+10.0]);
-# ax2.set_xlim([-3,6]);
-# ax2.set_xticks(range(-3,6, step=1.0));
-# ax2.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
-# ax2.set_xlabel(L"x");
-# ax2.legend();
-# # ax2.set_title(string(L"\sigma_{a} = ", s.sigmaA))
-# fig2.canvas.draw();
-# fig2
+fig4, ax4 = subplots(figsize=(15, 12), dpi=200);
+ax4.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"P_{100}");
+
+ax4.plot(solver.x, (s.aRad * s.c .* T_BUG + epsilon^2 .* h_BUG),"--",color = "orange", label = L"BUG_{5}");
+ax4.plot(solver.x, (s.aRad * s.c .* T_BUGH + epsilon^2 .* h_BUGH),"--",color = "blue", label = L"BUG_{15}");
+
+ax4.plot(solver.x, (s.aRad * s.c .* T_raBUG + epsilon^2 .* h_raBUG),"--",color = "purple", label = "raBUG");
+
+ax4.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
+ax4.set_xlim([0,3]);
+ax4.set_xticks(range(0,3, step=1.0));
+ax4.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
+ax4.set_xlabel(L"x");
+ax4.legend();
+fig2.canvas.draw();
+fig4
 # savefig("Scalar_flux_lowrank.pdf")
 
 
-# t = collect(range(0,s.Tend,size(energy_ex)[1]));
-# t1 = collect(range(0,s.Tend,size(energy_ex5)[1]));
-# t2 = collect(range(0,s.Tend,size(energy_ex15)[1]));
+t = collect(range(0,s.Tend,size(energy_Full)[1]));
+t1 = collect(range(0,s.Tend,size(energy_5)[1]));
+t2 = collect(range(0,s.Tend,size(energy_15)[1]));
 
-# fig3, ax3 = subplots(figsize=(15, 12), dpi=200);
-# start = 1;
-# ax3.semilogy(t[start:end],energy_ex[start:end],"--",color = "red", label = L"P_{100}");
-# # ax3.plot(t1[start:end],energy_ex5[start:end],"--",color = "green", label = L"P_{5}");
-# # ax3.plot(t2[start:end],energy_ex15[start:end],"--",color = "brown", label = L"P_{15}");
+fig5, ax5 = subplots(figsize=(15, 12), dpi=200);
+start = 1;
+ax5.semilogy(t[start:end],energy_Full[start:end],"--",color = "red", label = L"P_{100}");
+ax5.semilogy(t1[start:end],energy_5[start:end],"--",color = "green", label = L"P_{5}");
+ax5.semilogy(t2[start:end],energy_15[start:end],"--",color = "brown", label = L"P_{15}");
 
-# # ax3.semilogy(t[start:end],energy_exBUG[start:end],"--",color = "orange", label = L"BUG_{5}");
-# # ax3.plot(t[start:end],energy_exBUGH[start:end],"--",color = "blue", label = L"BUG_{15}");
+ax5.semilogy(t[start:end],energy_BUG[start:end],"--",color = "orange", label = L"BUG_{5}");
+ax5.semilogy(t[start:end],energy_BUGH[start:end],"--",color = "blue", label = L"BUG_{15}");
 
-# # ax3.semilogy(t[start:end],energy_exraBUG[start:end],"--",color = "purple",label = "raBUG");
+ax5.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = "raBUG");
 
-# ax3.legend();
-# ax3.set_xlim([0,s.Tend]);
-# ax3.set_ylabel(L"e");
-# ax3.set_xlabel(L"t");
-# fig3.canvas.draw();
-# fig3
+ax5.legend();
+ax5.set_xlim([0,s.Tend]);
+ax5.set_ylabel(L"energy");
+ax5.set_xlabel(L"t");
+fig5.canvas.draw();
+fig5
 # savefig("energy.pdf")
 
 
-# fig,ax = subplots(figsize = (15,12),dpi=200);
-# ax.semilogy(t[2:end],mass_ex,"--", color = "red", label = "full");
-# ax.semilogy(t[2:end],mass_exBUG,"--", color = "orange", label = "BUG");
-# ax.semilogy(t[2:end],mass_exraBUG,"--", color = "purple", label = "raBUG");
-# ax.set_xlim([0,s.Tend]);
-# ax.set_ylabel("mass");
-# ax.set_xlabel(L"t");
-# ax.legend();
-# fig.canvas.draw();
-# fig
+fig6,ax6 = subplots(figsize = (15,12),dpi=200);
+ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"P_{100}");
+ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = "BUG");
+ax6.semilogy(t[1:end],Resmass_raBUG,"--", color = "purple", label = "raBUG");
+ax6.set_xlim([0,s.Tend]);
+ax6.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
+ax6.set_xlabel(L"t");
+ax6.legend();
+fig6.canvas.draw();
+fig6
+# savefig("raBUG_ranks.pdf")
 
 
-# fig4, ax4 = subplots(figsize=(15, 12), dpi=200);
-# ax4.plot(t[1:end],ranks_exraBUG,"-",color = "purple", label = "rank");
-# # ax4.legend();
-# ax4.set_xlim([0,s.Tend]);
-# ax4.set_ylim([0,maximum(ranks_exraBUG)+1]);
-# ax4.set_yticks(range(1,maximum(ranks_exraBUG)+1,step=2))
-# ax4.set_ylabel("rank");
-# ax4.set_xlabel(L"t");
-# fig4.canvas.draw();
-# fig4
+fig7, ax7 = subplots(figsize=(15, 12), dpi=200);
+ax7.plot(t[1:end],ranks_raBUG,"-",color = "purple", label = "rank");
+
+ax7.set_xlim([0,s.Tend]);
+ax7.set_ylim([0,maximum(ranks_raBUG)+1]);
+ax7.set_yticks(range(1,maximum(ranks_raBUG)+1,step=2))
+ax7.set_ylabel("rank");
+ax7.set_xlabel(L"t");
+# ax4.legend();
+fig7.canvas.draw();
+fig7
 # savefig("raBUG_ranks.pdf")

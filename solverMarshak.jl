@@ -145,7 +145,7 @@ struct solverMarshak
             Do[i,i] = -1/dx;
             Do[i,i+1] = 1/dx;
         end
-        Do
+        # Do
 
         b = zeros(N);
         b[1] = sqrt(gamma[2]);
@@ -378,7 +378,7 @@ function solveFullMacroMicro(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T + epsilon^2 .*h) ./ c .+ c_nu .* T)*dx;
+    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
 
     # Linearisation of the problem
     LinTyp = obj.settings.LinTyp;
@@ -394,7 +394,6 @@ function solveFullMacroMicro(obj::solverMarshak)
     Beta = inv(1 / c .* INxC + dt*SigmaA ./epsilon^2);
     alpha_n = diagm(zeros(Nx));
     Nt = Int(round(Tend/dt));
-    # dt = Tend/Nt;
     
     ## Initiate array to save energy
     energy = zeros(Float64, Nt+1);
@@ -436,8 +435,9 @@ function solveFullMacroMicro(obj::solverMarshak)
         energy[k+1] = ComputeEnergy(obj,h,g,T);
 
         ## Compute mass of the system 
-        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) ./ c .+ c_nu .* T) * dx;
-        mass[k] = abs(mass_0 - mass_n)/mass_0;
+        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+        mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
+        # mass_0 = mass_n;
  
         t = t + dt;
     end
@@ -450,13 +450,13 @@ function solveBUGintegrator(obj::solverMarshak)
     t = 0.0;
     dt = obj.Const * obj.settings.dt;
     Tend = obj.settings.Tend;
-    # dt = Tend/100;
     Nx = obj.settings.Nx;
     NxC = obj.settings.NxC;
     N = obj.settings.N;
     dx = obj.settings.dx;
     epsilon = obj.settings.epsilon;
     r = obj.settings.r;
+
     ## Physical constants
     c_nu = obj.settings.c_nu;
     aRad = obj.settings.aRad;
@@ -485,7 +485,7 @@ function solveBUGintegrator(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T + epsilon^2 .*h) ./ c .+ c_nu .* T)*dx;
+    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
 
     X0,s,V0 = svd(g);
     X0 = Matrix(X0);
@@ -520,7 +520,7 @@ function solveBUGintegrator(obj::solverMarshak)
     mass = zeros(Float64,Nt);
 
     PrintSolverInformation(obj,"BUG solver",dt)
-    println("Running explicit BUG solver for modal macro-micro solver:")
+    println("Running modal macro-micro BUG solver:")
     for k = ProgressBar(1:Nt)
         ## Micro Update
         # K-step 
@@ -574,8 +574,9 @@ function solveBUGintegrator(obj::solverMarshak)
         energy[k+1] = ComputeEnergy(obj,h,X*S*transpose(V),T);
 
         ## Compute mass of the system 
-        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) ./ c .+ c_nu .* T) * dx;
-        mass[k] = abs(mass_0 - mass_n)/mass_0;
+        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+        mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
+        # mass_0 = mass_n;
     
 
         t = t + dt;
@@ -589,7 +590,6 @@ function solveBUG_rankadaptive(obj::solverMarshak)
     dt = obj.Const * obj.settings.dt;
     dx = obj.settings.dx;
     Tend = obj.settings.Tend;
-    # dt = Tend/100;
     Nx = obj.settings.Nx;
     NxC = obj.settings.NxC;
     epsilon = obj.settings.epsilon;
@@ -622,7 +622,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T + epsilon^2 .*h) ./ c .+ c_nu .* T)*dx;
+    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
 
     X0,s,V0 = svd(g);
     X0 = Matrix(X0);
@@ -660,8 +660,8 @@ function solveBUG_rankadaptive(obj::solverMarshak)
     ## Checking for mass conservation
     mass = zeros(Float64,Nt);
 
-    PrintSolverInformation(obj,"BUG solver",dt)
-    println("Running explicit rank-adaptive BUG solver:")
+    PrintSolverInformation(obj,"rank-adaptive BUG solver",dt)
+    println("Running asymptotic-preserving rank-adaptive BUG solver for modal macro-micro equations:")
     for k = ProgressBar(1:Nt)
         ## Micro Update
         
@@ -673,7 +673,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         # Boundary condition
         K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
         X1,_ = qr([aRad * c .* inv(SigmaA) * psi_avg * deltao *  T K X]);
-        # X1 = Matrix(X1);
+        X1 = Matrix(X1);
         M_BUG = transpose(X1) * X;
 
         # L-step
@@ -682,7 +682,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         L .= 1 / c .* L .- dt / epsilon .* transpose(X) * Dx * X * L * transpose(A) .+ dt / epsilon .* transpose(X) * Dxx * X * L * transpose(absA) - dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) - dt .* transpose(X) * deltao * h * transpose(b);
         L .= Beta_L * L;
         V1, _ = qr([b transpose(L) V]);
-        # V1 = Matrix(V1);
+        V1 = Matrix(V1);
         N_BUG = transpose(V1) * V;
 
         #S-step
@@ -698,7 +698,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         Vap, Vrem = V1[:,1:m], V1[:,m+1:end]; # Splitting Khat into basis required for Ap and remaining vectors
 
         Xhrem, Shrem = qr(Khat_rem);
-        # Xhrem = Matrix(Xhrem);
+        Xhrem = Matrix(Xhrem);
 
         U, sigma, W = svd(Shrem);
         U = Matrix(U);
@@ -736,9 +736,9 @@ function solveBUG_rankadaptive(obj::solverMarshak)
 
         V = [Vap W1];
         Xap, Sap = qr(Khat_ap);
-        # Xap = Matrix(Xap);
+        Xap = Matrix(Xap);
         X, R2 = qr([Xap Xrem]);
-        # X = Matrix(X);
+        X = Matrix(X);
         X[1,:], X[end,:] = zeros(Float64,rmax+m),zeros(Float64,rmax+m);
         S = zeros(rmax+m,rmax+m);
         S[1:m,1:m] = Sap;
@@ -771,10 +771,10 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         energy[k+1] = ComputeEnergy(obj,h,X*S*transpose(V),T);
 
         ## Compute mass of the system 
-        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) ./ c .+ c_nu .* T) * dx;
-        mass[k] = abs(mass_0 - mass_n)/mass_0;
+        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+        mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
+        # mass_0 = mass_n;
     
-
         t = t + dt;
     end
     return t, h, X*S*transpose(V), T, energy, ranks, mass;
