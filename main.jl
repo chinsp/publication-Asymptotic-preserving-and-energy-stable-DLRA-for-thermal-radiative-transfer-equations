@@ -13,6 +13,12 @@ rcParams["font.size"] = 30
 close("all")
 
 #########################################################################
+#       For running the absorber test case change the variable          #
+#       absorber = True in the settings.jl file in line 119             # 
+#                                                                       #        
+#########################################################################
+
+#########################################################################
 #                  Computing the Rosseland limit                        #
 #########################################################################
 Nx = 201;
@@ -151,7 +157,7 @@ ax5.set_ylabel(L"energy");
 ax5.set_xlabel(L"t");
 fig5.canvas.draw();
 fig5
-savefig("energy_hyperbolic.pdf")
+savefig("energy_hyperbolic.pdf", bbox_inches="tight")
 
 
 fig6,ax6 = subplots(figsize = (15,12),dpi=200);
@@ -165,7 +171,7 @@ ax6.set_xlabel(L"t");
 ax6.legend();
 fig6.canvas.draw();
 fig6
-savefig("Rel_residual_mass_hyperbolic.pdf")
+savefig("Rel_residual_mass_hyperbolic.pdf", bbox_inches="tight")
 
 
 fig7, ax7 = subplots(figsize=(15, 12), dpi=200);
@@ -246,7 +252,7 @@ ax10.set_ylabel(L"energy");
 ax10.set_xlabel(L"t");
 fig10.canvas.draw();
 fig10
-savefig("energy_diffusive.pdf")
+savefig("energy_diffusive.pdf", bbox_inches="tight")
 
 
 fig11,ax11 = subplots(figsize = (15,12),dpi=200);
@@ -259,7 +265,7 @@ ax11.set_xlabel(L"t");
 ax11.legend();
 fig11.canvas.draw();
 fig11
-savefig("Rel_residual_mass_diffusive.pdf")
+savefig("Rel_residual_mass_diffusive.pdf", bbox_inches="tight")
 
 fig12, ax12 = subplots(figsize=(15, 12), dpi=200);
 ax12.plot(t[1:end],ranks_raBUG_diff,"-",color = "purple", label = "rank");
