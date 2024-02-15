@@ -151,12 +151,13 @@ ax5.set_ylabel(L"energy");
 ax5.set_xlabel(L"t");
 fig5.canvas.draw();
 fig5
-# savefig("energy_hyperbolic.pdf")
+savefig("energy_hyperbolic.pdf")
 
 
 fig6,ax6 = subplots(figsize = (15,12),dpi=200);
 ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"P_{100}");
 ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"BUG_{5}");
+ax6.semilogy(t[2:end],Resmass_BUGH,"--", color = "blue", label = L"BUG_{15}");
 ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = "raBUG");
 ax6.set_xlim([0,s.Tend]);
 ax6.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
@@ -164,7 +165,7 @@ ax6.set_xlabel(L"t");
 ax6.legend();
 fig6.canvas.draw();
 fig6
-# savefig("Rel_residual_mass_hyperbolic.pdf")
+savefig("Rel_residual_mass_hyperbolic.pdf")
 
 
 fig7, ax7 = subplots(figsize=(15, 12), dpi=200);
@@ -191,23 +192,23 @@ regime = "parabolic"
 s = Settings(Nx,N,epsilon,regime);
 solver = solverMarshak(s);
 
-t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(solver);
+t_Full_diff, h_Full_diff, g_Full_diff, T_Full_diff, energy_Full_diff, Resmass_Full_diff = solveFullMacroMicro(solver);
 
 s.r = 1;
-t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
+t_BUG_diff, h_BUG_diff, g_BUG_diff, T_BUG_diff, energy_BUG_diff, Resmass_BUG_diff = solveBUGintegrator(solver);
 
 s.r = 1;
-t_raBUG, h_raBUG, g_raBUG, T_raBUG, energy_raBUG, ranks_raBUG, Resmass_raBUG = solveBUG_rankadaptive(solver);
+t_raBUG_diff, h_raBUG_diff, g_raBUG_diff, T_raBUG_diff, energy_raBUG_diff, ranks_raBUG_diff, Resmass_raBUG_diff = solveBUG_rankadaptive(solver);
 
 
 
 
 fig8, ax8 = subplots(figsize=(15, 12), dpi=200);
 ax8.plot(x1, s.aRad * s.c * T,color = "black", "--", label = "Rosseland limit");
-ax8.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"P_{100}");
-ax8.plot(solver.x, (s.aRad * s.c .* T_BUG + epsilon^2 .* h_BUG),"--",color = "orange", label = L"BUG_{1}");
-ax8.plot(solver.x, (s.aRad * s.c .* T_raBUG + epsilon^2 .* h_raBUG),"--",color = "purple", label = "raBUG");
-ax8.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
+ax8.plot(solver.x, (s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff),"--",color = "red", label = L"P_{100}");
+ax8.plot(solver.x, (s.aRad * s.c .* T_BUG_diff + epsilon^2 .* h_BUG_diff),"--",color = "orange", label = L"BUG_{1}");
+ax8.plot(solver.x, (s.aRad * s.c .* T_raBUG_diff + epsilon^2 .* h_raBUG_diff),"--",color = "purple", label = "raBUG");
+ax8.set_ylim([minimum(s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff)-1.0,maximum(s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff)+5.0]);
 ax8.set_xlim([0,3]);
 ax8.set_xticks(range(0,3, step=1.0));
 ax8.set_ylabel(L"Scalar flux, $\phi(t,x) = \frac{1}{2}\int_{-1}^{1}f(t,x,\mu) \mathrm{d}\mu$");
@@ -219,10 +220,10 @@ fig8
 
 fig9, ax9 = subplots(figsize=(15, 12), dpi=200);
 ax9.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax9.plot(solver.x, T_Full ,"--",color = "red", label = string(L"P_{100}"));
-ax9.plot(solver.x, T_BUG ,"--",color = "orange", label = string(L"BUG_{1}"));
-ax9.plot(solver.x, T_raBUG ,"--",color = "purple", label = string("raBUG"));
-ax9.set_ylim([minimum(T_Full)-1.0,maximum(T_Full)+5.0]);
+ax9.plot(solver.x, T_Full_diff ,"--",color = "red", label = string(L"P_{100}"));
+ax9.plot(solver.x, T_BUG_diff ,"--",color = "orange", label = string(L"BUG_{1}"));
+ax9.plot(solver.x, T_raBUG_diff ,"--",color = "purple", label = string("raBUG"));
+ax9.set_ylim([minimum(T_Full_diff)-1.0,maximum(T_Full_diff)+5.0]);
 ax9.set_xlim([0,3]);
 ax9.set_xticks(range(0,3, step=0.5));
 ax9.set_ylabel("Temperature");
@@ -232,39 +233,39 @@ fig9.canvas.draw();
 fig9
 # savefig("Temperature_diffusive.pdf")
 
-t = collect(range(0,s.Tend,size(energy_Full)[1]));
+t = collect(range(0,s.Tend,size(energy_Full_diff)[1]));
 
 fig10, ax10 = subplots(figsize=(15, 12), dpi=200);
 start = 1;
-ax10.semilogy(t[start:end],energy_Full[start:end],"--",color = "red", label = L"P_{100}",linewidth = 4);
-ax10.semilogy(t[start:end],energy_BUG[start:end],"--",color = "orange", label = L"BUG_{1}",linewidth = 4);
-ax10.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = "raBUG",linewidth = 4);
+ax10.semilogy(t[start:end],energy_Full_diff[start:end],"--",color = "red", label = L"P_{100}",linewidth = 4);
+ax10.semilogy(t[start:end],energy_BUG_diff[start:end],"--",color = "orange", label = L"BUG_{1}",linewidth = 4);
+ax10.semilogy(t[start:end],energy_raBUG_diff[start:end],"--",color = "purple",label = "raBUG",linewidth = 4);
 ax10.legend();
 ax10.set_xlim([0,s.Tend]);
 ax10.set_ylabel(L"energy");
 ax10.set_xlabel(L"t");
 fig10.canvas.draw();
 fig10
-# savefig("energy_diffusive.pdf")
+savefig("energy_diffusive.pdf")
 
 
 fig11,ax11 = subplots(figsize = (15,12),dpi=200);
-ax11.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"P_{100}",linewidth = 4);
-ax11.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"BUG_{1}",linewidth = 4);
-ax11.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = "raBUG",linewidth = 4);
+ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"P_{100}",linewidth = 4);
+ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "orange", label = L"BUG_{1}",linewidth = 4);
+ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = "raBUG",linewidth = 4);
 ax11.set_xlim([0,s.Tend]);
 ax11.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax11.set_xlabel(L"t");
 ax11.legend();
 fig11.canvas.draw();
 fig11
-# savefig("Rel_residual_mass_diffusive.pdf")
+savefig("Rel_residual_mass_diffusive.pdf")
 
 fig12, ax12 = subplots(figsize=(15, 12), dpi=200);
-ax12.plot(t[1:end],ranks_raBUG,"-",color = "purple", label = "rank");
+ax12.plot(t[1:end],ranks_raBUG_diff,"-",color = "purple", label = "rank");
 ax12.set_xlim([0,s.Tend]);
-ax12.set_ylim([0,maximum(ranks_raBUG)+1]);
-ax12.set_yticks(range(1,maximum(ranks_raBUG)+1,step=2))
+ax12.set_ylim([0,maximum(ranks_raBUG_diff)+1]);
+ax12.set_yticks(range(1,maximum(ranks_raBUG_diff)+1,step=2))
 ax12.set_ylabel("rank");
 ax12.set_xlabel(L"t");
 fig12.canvas.draw();
@@ -274,7 +275,7 @@ fig12
 # h0,g0,T0 = IC(s);
 # fig,ax = subplots(figsize = (15,12), dpi = 200)
 # ax.plot(x1, s.aRad * s.c * T,color = "red", "--", label = "Diffusive regime",linewidth = 6);
-# ax.plot(solver.x, (s.aRad * s.c .* T_Full + h_Full),"--",color = "purple", label = "Hyperbolic regime",linewidth = 6);
+# ax.plot(solver.x, (s.aRad * s.c .* T_Full_diff + h_Full_diff),"--",color = "purple", label = "Hyperbolic regime",linewidth = 6);
 # ax.plot(solver.x, (s.aRad * s.c .* T0 .+ h0),"--",color = "black", label = "Initial distribution",linewidth = 6);
 # ax.set_ylim([minimum(T0)-1.0,maximum(T0)+5.0]);
 # ax.set_xlim([0,3]);
