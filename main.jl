@@ -267,7 +267,6 @@ ax12.set_ylim([0,maximum(ranks_raBUG)+1]);
 ax12.set_yticks(range(1,maximum(ranks_raBUG)+1,step=2))
 ax12.set_ylabel("rank");
 ax12.set_xlabel(L"t");
-# ax4.legend();
 fig12.canvas.draw();
 fig12
 # savefig("raBUG_ranks_diffusive.pdf")
