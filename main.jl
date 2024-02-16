@@ -277,34 +277,3 @@ ax12.set_xlabel(L"t");
 fig12.canvas.draw();
 fig12
 savefig("raBUG_ranks_diffusive.pdf")
-
-# h0,g0,T0 = IC(s);
-# fig,ax = subplots(figsize = (15,12), dpi = 200)
-# # ax.plot(x1, s.aRad * s.c * T,color = "red", "--", label = "Diffusive regime",linewidth = 6);
-# # ax.plot(solver.x, (s.aRad * s.c .* T_Full_diff + h_Full_diff),"--",color = "purple", label = "Hyperbolic regime",linewidth = 6);
-# ax.plot(solver.x, (s.aRad * s.c .* T0 .+ h0),"--",color = "black", label = "Initial distribution",linewidth = 6);
-# # ax.set_ylim([minimum(T0)-1.0,maximum(T0)+5.0]);
-# # ax.set_xlim([0,3]);
-# # ax.set_xticks(range(0,3, step=0.5));
-# ax.set_ylabel("Particle distribution");
-# ax.set_xlabel(L"x");
-# ax.legend();
-# fig.canvas.draw();
-# fig
-# savefig("presentation_plot.pdf")
-
-# theta = LinRange(0,2*pi,100);
-# y = solver.x;
-# function meshgrid(x, y)
-#     X = [i for i in x, j in 1:length(y)];
-#     Y = [j for i in 1:length(x), j in y];
-#     return X, Y;
-# end
-
-# X,Y = meshgrid(T,T);
-
-# Mat_2D = (X + Y)./2
-
-# fig,ax = subplots(figsize = (15,12), dpi = 200)
-# ax.imshow(Mat_2D)
-# fig
