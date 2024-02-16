@@ -61,7 +61,6 @@ mutable struct Settings
     LinTyp::String;
 
     # If the problem impliments and absorber
-    absorber::Bool;
     alim::Float64; # The position of the absorber in the domain
 
     function Settings(Nx::Int=1001,N::Int=500,epsilon::Float64=1.0,cflType::String="hyperbolic")
@@ -81,7 +80,7 @@ mutable struct Settings
         # println("Number of points for spatial discretisation of micro variable = ",NxC);
 
         # Problem 
-        problem = "1DLinearTestcase" #  1DLinesource, 1DMarshakWave, 1DLinearTestcase
+        problem = "1DLinearTestcase" #  1DLinearTestcase, 1DAbsorberTestcase
 
         # Scattering and absorption coefficients
         sigmaA = 1.0 / 0.926 / 1e-6 / 100.0;
@@ -105,18 +104,24 @@ mutable struct Settings
         Tend = 0.05 * 1e-10;
         cfl1 = 1.0; # CFL condition parabolic
         cfl2 = 1.0; # CFL condition hyperbolic
-        absorber = false;
         alim = 0.0;
         epsi_array_Nx = zeros(Nx);
         epsi_array_NxC = zeros(NxC);
         if problem == "1DLinearTestcase"
-            Tend = 3.16;
+            Tend = 1.5;
             sigmaA = 0.5;
             aRad = 1.0;
             c = 1.0;
             c_nu = 1.0;
             LinTyp = "Lin";
-            absorber = false;
+            alim = 0.25;
+        elseif problem == "1DAbsorberTestcase"
+            Tend = 1.5;
+            sigmaA = 0.5;
+            aRad = 1.0;
+            c = 1.0;
+            c_nu = 1.0;
+            LinTyp = "Lin";
             alim = 0.25;
         end
 
@@ -134,7 +139,7 @@ mutable struct Settings
         r = 10;
         epsAdapt = 0.05; # Tolerance for rank adaptive integrator
 
-        new(Nx,NxC,a,b,dx,Tend,dt,cfl1,cfl2,cflType,N,x,xMid,problem,epsilon,epsi_array_Nx,epsi_array_NxC,ICType,BCType,sigmaS,sigmaA,c,StefBoltz,aRad,c_nu,r,epsAdapt,LinTyp,absorber,alim);
+        new(Nx,NxC,a,b,dx,Tend,dt,cfl1,cfl2,cflType,N,x,xMid,problem,epsilon,epsi_array_Nx,epsi_array_NxC,ICType,BCType,sigmaS,sigmaA,c,StefBoltz,aRad,c_nu,r,epsAdapt,LinTyp,alim);
     end 
 end
 
@@ -147,18 +152,23 @@ function IC(obj::Settings)
         T0 = zeros(obj.Nx);
         for j = 1:obj.Nx
             if obj.x[j] >= -0.5 && obj.x[j] <= 0.5
-                if obj.absorber
-                    if obj.x[j] >= -obj.alim && obj.x[j] <= obj.alim
-                        T0[j] = 100.0/obj.aRad/obj.sigmaA;
-                    else
-                        T0[j] = 100.0/obj.aRad/0.1;
-                    end
-                else
-                    T0[j] = 100.0/obj.aRad/obj.sigmaA;
-                end
+                T0[j] = 100.0/obj.aRad/obj.sigmaA;
             end
         end
         # T0[1] =  50.0;
+        h0 = f0_mu ; #-1/epsilon^2 .* obj.aRad * obj.c * T0;
+        # h0 = f0_mu
+        g0 = f0;
+    elseif obj.problem == "1DAbsorberTestcase"
+        T0 = zeros(obj.Nx);
+        for j = 1:obj.Nx
+            if obj.x[j] >= -0.5 && obj.x[j] <= 0.5
+                T0[j] = 100.0/obj.aRad/obj.sigmaA;
+                if obj.x[j] >= -obj.alim && obj.x[j] <= obj.alim
+                    T0[j] = 100.0/obj.aRad/5.0;
+                end
+            end
+        end
         h0 = f0_mu ; #-1/epsilon^2 .* obj.aRad * obj.c * T0;
         # h0 = f0_mu
         g0 = f0;

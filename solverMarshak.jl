@@ -89,6 +89,7 @@ struct solverMarshak
         BetaN = maximum(w) * (N+1);
         mu1 = deleteat!(mu,findall(x->x==0,mu));
         dt_array = zeros(Float64,length(mu1));
+
         if settings.cflType == "parabolic"
             for k = eachindex(mu1)
                 dt_array[k] = settings.dt /1/5/BetaN/settings.c/ mu1[k]^2;
@@ -246,19 +247,19 @@ end
 function AbsorpMatrix(obj::solverMarshak)
     INx = I(obj.settings.Nx);
     INxC = I(obj.settings.NxC);
-    if obj.settings.absorber
-        SigmaA = 0.5*INxC;
-        SigmaAf = 0.5*INx;
+    if obj.settings.problem == "1DAbsorberTestcase"
+        SigmaA = obj.sigmaA*INxC;
+        SigmaAf = obj.sigmaA*INx;
         alim = obj.settings.alim;
         ## Implementation for an absorber in the middle of the domain
         for j = 1:obj.settings.NxC
             if obj.xMid[j] >= -alim && obj.xMid[j] <= alim
-                SigmaA[j,j] = obj.sigmaA;
+                SigmaA[j,j] = 1.0;
             end
         end
         for j = 1:obj.settings.Nx
             if obj.x[j] >= -alim && obj.x[j] <= alim
-                SigmaAf[j,j] = obj.sigmaA;
+                SigmaAf[j,j] = 1.0;
             end
         end
     else
@@ -317,7 +318,7 @@ function solveRosselandLimit(obj::solverMarshak)
     SigmaAinv = inv(SigmaA);
 
     PrintSolverInformation(obj,"Explicit Rosseland diffusion limit",dt)
-    println("Running explicit solver for limiting Rosseland diffuion equation")
+    println("Running explicit solver for limiting Rosseland diffusion equation")
 
     for k = ProgressBar(1:Nt)
         # Update temperature

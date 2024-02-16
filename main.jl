@@ -13,9 +13,9 @@ rcParams["font.size"] = 30
 close("all")
 
 #########################################################################
-#       For running the absorber test case change the variable          #
-#       absorber = True in the settings.jl file in line 119             # 
-#                                                                       #        
+# For running the absorber test case change the variable absorber to    #
+# true in the settings.jl file in line 119. The default is false.       # 
+#  Note: Running the abosrber test case overwrites the current plots    #        
 #########################################################################
 
 #########################################################################
@@ -81,7 +81,7 @@ ax1.set_xlabel(L"x");
 ax1.legend();
 fig1.canvas.draw();
 fig1
-# savefig("Temperature_moment_hyperbolic.pdf")
+savefig("Temperature_moment_hyperbolic.pdf")
 
 fig2, ax2 = subplots(figsize=(15, 12), dpi=200);
 ax2.plot(x1, T,color = "black", "--", label = "Rosseland limit");
@@ -99,7 +99,7 @@ ax2.set_xlabel(L"x");
 ax2.legend();
 fig2.canvas.draw();
 fig2
-# savefig("Temperature_low_rank_hyperbolic.pdf")
+savefig("Temperature_low_rank_hyperbolic.pdf")
 
 
 fig3, ax3 = subplots(figsize=(15, 12), dpi=200);
@@ -115,7 +115,7 @@ ax3.set_xlabel(L"x");
 ax3.legend();
 fig3.canvas.draw();
 fig3
-# savefig("Scalar_flux_moment_hyperbolic.pdf")
+savefig("Scalar_flux_moment_hyperbolic.pdf")
 
 fig4, ax4 = subplots(figsize=(15, 12), dpi=200);
 ax4.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"P_{100}");
@@ -133,7 +133,7 @@ ax4.set_xlabel(L"x");
 ax4.legend();
 fig4.canvas.draw();
 fig4
-# savefig("Scalar_flux_lowrank_hyperbolic.pdf")
+savefig("Scalar_flux_lowrank_hyperbolic.pdf")
 
 
 t = collect(range(0,s.Tend,size(energy_Full)[1]));
@@ -153,7 +153,7 @@ ax5.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = 
 
 ax5.legend();
 ax5.set_xlim([0,s.Tend]);
-ax5.set_ylabel(L"energy");
+ax5.set_ylabel("energy");
 ax5.set_xlabel(L"t");
 fig5.canvas.draw();
 fig5
@@ -185,7 +185,7 @@ ax7.set_xlabel(L"t");
 # ax4.legend();
 fig7.canvas.draw();
 fig7
-# savefig("raBUG_ranks_hyperbolic.pdf")
+savefig("raBUG_ranks_hyperbolic.pdf")
 
 
 #########################################################################
@@ -222,7 +222,7 @@ ax8.set_xlabel(L"x");
 ax8.legend();
 fig8.canvas.draw();
 fig8
-# savefig("Scalar_flux_diffusive.pdf")
+savefig("Scalar_flux_diffusive.pdf")
 
 fig9, ax9 = subplots(figsize=(15, 12), dpi=200);
 ax9.plot(x1, T,color = "black", "--", label = "Rosseland limit");
@@ -237,18 +237,18 @@ ax9.set_xlabel(L"x");
 ax9.legend();
 fig9.canvas.draw();
 fig9
-# savefig("Temperature_diffusive.pdf")
+savefig("Temperature_diffusive.pdf")
 
 t = collect(range(0,s.Tend,size(energy_Full_diff)[1]));
 
 fig10, ax10 = subplots(figsize=(15, 12), dpi=200);
 start = 1;
-ax10.semilogy(t[start:end],energy_Full_diff[start:end],"--",color = "red", label = L"P_{100}",linewidth = 4);
-ax10.semilogy(t[start:end],energy_BUG_diff[start:end],"--",color = "orange", label = L"BUG_{1}",linewidth = 4);
-ax10.semilogy(t[start:end],energy_raBUG_diff[start:end],"--",color = "purple",label = "raBUG",linewidth = 4);
+ax10.semilogy(t[start:end],energy_Full_diff[start:end],"--",color = "red", label = L"P_{100}");
+ax10.semilogy(t[start:end],energy_BUG_diff[start:end],"--",color = "orange", label = L"BUG_{1}");
+ax10.semilogy(t[start:end],energy_raBUG_diff[start:end],"--",color = "purple",label = "raBUG");
 ax10.legend();
 ax10.set_xlim([0,s.Tend]);
-ax10.set_ylabel(L"energy");
+ax10.set_ylabel("energy");
 ax10.set_xlabel(L"t");
 fig10.canvas.draw();
 fig10
@@ -256,9 +256,9 @@ savefig("energy_diffusive.pdf", bbox_inches="tight")
 
 
 fig11,ax11 = subplots(figsize = (15,12),dpi=200);
-ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"P_{100}",linewidth = 4);
-ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "orange", label = L"BUG_{1}",linewidth = 4);
-ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = "raBUG",linewidth = 4);
+ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"P_{100}");
+ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "orange", label = L"BUG_{1}");
+ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = "raBUG");
 ax11.set_xlim([0,s.Tend]);
 ax11.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax11.set_xlabel(L"t");
@@ -276,19 +276,35 @@ ax12.set_ylabel("rank");
 ax12.set_xlabel(L"t");
 fig12.canvas.draw();
 fig12
-# savefig("raBUG_ranks_diffusive.pdf")
+savefig("raBUG_ranks_diffusive.pdf")
 
 # h0,g0,T0 = IC(s);
 # fig,ax = subplots(figsize = (15,12), dpi = 200)
-# ax.plot(x1, s.aRad * s.c * T,color = "red", "--", label = "Diffusive regime",linewidth = 6);
-# ax.plot(solver.x, (s.aRad * s.c .* T_Full_diff + h_Full_diff),"--",color = "purple", label = "Hyperbolic regime",linewidth = 6);
+# # ax.plot(x1, s.aRad * s.c * T,color = "red", "--", label = "Diffusive regime",linewidth = 6);
+# # ax.plot(solver.x, (s.aRad * s.c .* T_Full_diff + h_Full_diff),"--",color = "purple", label = "Hyperbolic regime",linewidth = 6);
 # ax.plot(solver.x, (s.aRad * s.c .* T0 .+ h0),"--",color = "black", label = "Initial distribution",linewidth = 6);
-# ax.set_ylim([minimum(T0)-1.0,maximum(T0)+5.0]);
-# ax.set_xlim([0,3]);
-# ax.set_xticks(range(0,3, step=0.5));
+# # ax.set_ylim([minimum(T0)-1.0,maximum(T0)+5.0]);
+# # ax.set_xlim([0,3]);
+# # ax.set_xticks(range(0,3, step=0.5));
 # ax.set_ylabel("Particle distribution");
 # ax.set_xlabel(L"x");
 # ax.legend();
 # fig.canvas.draw();
 # fig
 # savefig("presentation_plot.pdf")
+
+# theta = LinRange(0,2*pi,100);
+# y = solver.x;
+# function meshgrid(x, y)
+#     X = [i for i in x, j in 1:length(y)];
+#     Y = [j for i in 1:length(x), j in y];
+#     return X, Y;
+# end
+
+# X,Y = meshgrid(T,T);
+
+# Mat_2D = (X + Y)./2
+
+# fig,ax = subplots(figsize = (15,12), dpi = 200)
+# ax.imshow(Mat_2D)
+# fig
