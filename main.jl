@@ -73,7 +73,7 @@ ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
 ax1.plot(solver.x, T_Full ,"--",color = "red", label = string(L"P_{100}"));
 ax1.plot(solver.x, T_5 ,"--",color = "green", label = string(L"P_{5}"));
 ax1.plot(solver.x, T_15 ,"--",color = "brown", label = string(L"P_{15}"));
-
+ax1.set_ylim([minimum(T_Full)-1.0,maximum(T_Full)+5.0]);
 ax1.set_xlim([0,3]);
 ax1.set_xticks(range(0,3, step=0.5));
 ax1.set_ylabel("Temperature");
@@ -91,7 +91,7 @@ ax2.plot(solver.x, T_BUGH,"--",color = "blue", label = string(L"BUG_{15}"));
 
 ax2.plot(solver.x, T_raBUG ,"--",color = "purple", label = string("raBUG"));
 
-ax2.set_ylim([minimum(T_Full)-1.0,maximum(T_Full)+5.0]);
+
 ax2.set_xlim([0,3]);
 ax2.set_xticks(range(0,3, step=0.5));
 ax2.set_ylabel("Temperature");
