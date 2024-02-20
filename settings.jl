@@ -80,7 +80,7 @@ mutable struct Settings
         # println("Number of points for spatial discretisation of micro variable = ",NxC);
 
         # Problem 
-        problem = "1DLinearTestcase" #  1DLinearTestcase, 1DAbsorberTestcase
+        problem = "1DAbsorberTestcase" #  1DLinearTestcase, 1DAbsorberTestcase
 
         # Scattering and absorption coefficients
         sigmaA = 1.0 / 0.926 / 1e-6 / 100.0;
@@ -122,7 +122,7 @@ mutable struct Settings
             c = 1.0;
             c_nu = 1.0;
             LinTyp = "Lin";
-            alim = 0.25;
+            alim = 0.15;
         end
 
         if cflType == "parabolic"
@@ -136,7 +136,7 @@ mutable struct Settings
         end
 
         # Settings for BUG integrator
-        r = 10;
+        r = 5;
         epsAdapt = 0.05; # Tolerance for rank adaptive integrator
 
         new(Nx,NxC,a,b,dx,Tend,dt,cfl1,cfl2,cflType,N,x,xMid,problem,epsilon,epsi_array_Nx,epsi_array_NxC,ICType,BCType,sigmaS,sigmaA,c,StefBoltz,aRad,c_nu,r,epsAdapt,LinTyp,alim);

@@ -169,26 +169,15 @@ function setupIC(obj::solverMarshak)
     return h0,g0,T0;
 end
 
-function BCT(obj::solverMarshak,T0::Array)
-    if obj.settings.problem == "1DMarshakWave"
-        T0[1] = 80.0 * 11604.0;
-        T0[end] = 0.02 * 11604.0;
-    elseif obj.settings.problem == "1DLinesource"
-        # T0[1] = 0.0;
-        # T0[end] = 0.0;
-    elseif obj.settings.problem == "1DLinearTestcase"
+function BCT(obj::solverMarshak,T::Array)
+    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
+        T[1],T[end] = 0,0;
     end
-    return T0;
+    return T;
 end
 
 function BCg(obj::solverMarshak,g::Array)
-    if obj.settings.problem == "1DMarshakWave"
-        g[1,:] = zeros(obj.settings.N);
-        g[end,:] = zeros(obj.settings.N);
-    elseif obj.settings.problem == "1DLinesource"
-        g[1,:] = zeros(obj.settings.N);
-        g[end,:] = zeros(obj.settings.N);
-    elseif obj.settings.problem == "1DLinearTestcase"
+    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
         g[1,:] = zeros(obj.settings.N);
         g[end,:] = zeros(obj.settings.N);
     end
@@ -199,21 +188,17 @@ function BCh(obj::solverMarshak,h::Array,T::Array)
     aRad = obj.settings.aRad;
     c = obj.settings.c;
     epsilon = obj.settings.epsilon;
-    if obj.settings.problem == "1DMarshakWave"
-        h[1],h[end] = -1/epsilon^2 .* aRad * c * T[1],-1/epsilon^2 .* aRad * c * T[end];
-    elseif obj.settings.problem == "1DLinesource"
-        # h[1],h[end] = 0,0;
-    elseif obj.settings.problem == "1DLinearTestcase"
-        h[1],h[end] = -1/epsilon^2 .* aRad * c * T[1],-1/epsilon^2 .* aRad * c * T[end];
+    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
+        h[1],h[end] = 0,0; # -1/epsilon^2 .* aRad * c * T[1],-1/epsilon^2 .* aRad * c * T[end];
     end
     return h;
 end
 
 function ComputeEnergy(obj::solverMarshak,h::Array,g::Array, T::Array)
     aRad = obj.settings.aRad;
-    # epsilon = obj.settings.epsilon;
-    epsi_array_Nx = obj.settings.epsi_array_Nx;
-    epsi_array_NxC = obj.settings.epsi_array_NxC;
+    epsilon = obj.settings.epsilon;
+    # epsi_array_Nx = obj.settings.epsi_array_Nx;
+    # epsi_array_NxC = obj.settings.epsi_array_NxC;
     c = obj.settings.c;
     gamma0 = sqrt(2);
     c_nu = obj.settings.c_nu;
@@ -222,11 +207,11 @@ function ComputeEnergy(obj::solverMarshak,h::Array,g::Array, T::Array)
     e1,e2,e3 = 0.0,0.0,0.0;
     Nx, NxC = obj.settings.Nx, obj.settings.NxC;
     for i = 1:Nx
-        e1 = e1 + (aRad * T[i] + epsi_array_Nx[i]^2 / c * h[i])^2 * dx;
+        e1 = e1 + (aRad * T[i] + epsilon^2 / c * h[i])^2 * dx;
         e2 = e2 + (sqrt(aRad * c_nu / 2) * T[i])^2 * dx;
     end
     for i = 1:NxC
-        e3 = e3 + (epsi_array_NxC[i]/gamma0/c)^2 * transpose(g[i,:]) * g[i,:] * dx;
+        e3 = e3 + (epsilon/gamma0/c)^2 * transpose(g[i,:]) * g[i,:] * dx;
     end
     energy = e1 + e2 + e3;
     return energy;
@@ -254,12 +239,12 @@ function AbsorpMatrix(obj::solverMarshak)
         ## Implementation for an absorber in the middle of the domain
         for j = 1:obj.settings.NxC
             if obj.xMid[j] >= -alim && obj.xMid[j] <= alim
-                SigmaA[j,j] = 1.0;
+                SigmaA[j,j] = 5.0;
             end
         end
         for j = 1:obj.settings.Nx
             if obj.x[j] >= -alim && obj.x[j] <= alim
-                SigmaAf[j,j] = 1.0;
+                SigmaAf[j,j] = 5.0;
             end
         end
     else
@@ -379,7 +364,7 @@ function solveFullMacroMicro(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+    mass_0 = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
 
     # Linearisation of the problem
     LinTyp = obj.settings.LinTyp;
@@ -436,7 +421,7 @@ function solveFullMacroMicro(obj::solverMarshak)
         energy[k+1] = ComputeEnergy(obj,h,g,T);
 
         ## Compute mass of the system 
-        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+        mass_n = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
         mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
         # mass_0 = mass_n;
  
@@ -486,7 +471,7 @@ function solveBUGintegrator(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+    mass_0 = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
 
     X0,s,V0 = svd(g);
     X0 = Matrix(X0);
@@ -529,9 +514,10 @@ function solveBUGintegrator(obj::solverMarshak)
         K .= 1 / c .* K .- dt / epsilon .* Dx * K * transpose(V) * transpose(A) * V .+ dt / epsilon .* Dxx * K * transpose(V) * transpose(absA) * V - dt * aRad * c /epsilon^2 .* psi_avg * deltao *  T * transpose(b) * V - dt .* deltao * h * transpose(b) * V;
         K .= Beta_K * K;
         # BC condition
-        K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
-        X1,_ = qr(K);
+        # K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
+        X1,STmp = qr(K);
         X1 = Matrix(X1);
+        X1[1,:],X1[end,:] = zeros(Float64,r),zeros(Float64,r);
         M_BUG = transpose(X1) * X;
 
         # L-step
@@ -539,7 +525,7 @@ function solveBUGintegrator(obj::solverMarshak)
         Beta_L = inv(1 / c .* I(r) + dt/epsilon^2 .* transpose(X) * SigmaA * X);
         L .= 1 / c .* L .- dt / epsilon .* transpose(X) * Dx * X * L * transpose(A) .+ dt / epsilon .* transpose(X) * Dxx * X * L * transpose(absA) - dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) - dt .* transpose(X) * deltao * h * transpose(b);
         L .= Beta_L * L;
-        V1, _ = qr(transpose(L));
+        V1, STmp = qr(transpose(L));
         V1 = Matrix(V1);
         N_BUG = transpose(V1) * V;
 
@@ -623,7 +609,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
     e1[1] = 1;
 
     h, g, T = setupIC(obj);
-    mass_0 = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+    mass_0 = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
 
     X0,s,V0 = svd(g);
     X0 = Matrix(X0);
@@ -672,9 +658,10 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         K .= 1 / c .* K .- dt / epsilon .* Dx * K * transpose(V) * transpose(A) * V .+ dt / epsilon .* Dxx * K * transpose(V) * transpose(absA) * V - dt * aRad * c /epsilon^2 .* psi_avg * deltao *  T * transpose(b) * V - dt .* deltao * h * transpose(b) * V;
         K .= Beta_K * K;
         # Boundary condition
-        K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
-        X1,_ = qr([aRad * c .* inv(SigmaA) * psi_avg * deltao *  T K X]);
+        # K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
+        X1,STmp = qr([aRad * c .* inv(SigmaA) * psi_avg * deltao *  T K X]);
         X1 = Matrix(X1);
+        X1[1,:], X1[end,:] = zeros(Float64,2*r+1),zeros(Float64,2*r+1);
         M_BUG = transpose(X1) * X;
 
         # L-step
@@ -682,7 +669,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         Beta_L = inv(1 / c .* I(r) + dt/epsilon^2 .* transpose(X) * SigmaA * X);
         L .= 1 / c .* L .- dt / epsilon .* transpose(X) * Dx * X * L * transpose(A) .+ dt / epsilon .* transpose(X) * Dxx * X * L * transpose(absA) - dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) - dt .* transpose(X) * deltao * h * transpose(b);
         L .= Beta_L * L;
-        V1, _ = qr([b transpose(L) V]);
+        V1,STmp = qr([b transpose(L) V]);
         V1 = Matrix(V1);
         N_BUG = transpose(V1) * V;
 
@@ -772,7 +759,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         energy[k+1] = ComputeEnergy(obj,h,X*S*transpose(V),T);
 
         ## Compute mass of the system 
-        mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
+        mass_n = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
         mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
         # mass_0 = mass_n;
     
