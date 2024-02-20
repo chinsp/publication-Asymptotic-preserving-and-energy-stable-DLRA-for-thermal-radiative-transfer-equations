@@ -59,7 +59,7 @@ t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(
 s.r = 5;
 t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
 
-s.r = 10;
+s.r = 15;
 r_BUGH = s.r;
 t_BUGH, h_BUGH, g_BUGH, T_BUGH, energy_BUGH, Resmass_BUGH = solveBUGintegrator(solver);
 
@@ -179,7 +179,6 @@ ax7.set_ylim([0,maximum(ranks_raBUG)+1]);
 ax7.set_yticks(range(1,maximum(ranks_raBUG)+1,step=2))
 ax7.set_ylabel("rank");
 ax7.set_xlabel(L"t");
-# ax4.legend();
 fig7.canvas.draw();
 fig7
 savefig("raBUG_ranks_hyperbolic.pdf")

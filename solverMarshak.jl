@@ -140,13 +140,13 @@ struct solverMarshak
             deltao[i,i] = 1/dx;
             deltao[i,i-1] = -1/dx;
         end
-        # deltao[1,1], deltao[end,end] = 1/dx, -1/dx;
+        deltao[1,1], deltao[end,end] = 1/dx, -1/dx;
 
         for i = 1:Nx
             Do[i,i] = -1/dx;
             Do[i,i+1] = 1/dx;
         end
-        # Do
+        # Do[1,:],Do[end,:] = zeros(NxC),zeros(NxC);
 
         b = zeros(N);
         b[1] = sqrt(gamma[2]);
@@ -517,7 +517,7 @@ function solveBUGintegrator(obj::solverMarshak)
         # K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
         X1,STmp = qr(K);
         X1 = Matrix(X1);
-        X1[1,:],X1[end,:] = zeros(Float64,r),zeros(Float64,r);
+        # X1[1,:],X1[end,:] = zeros(Float64,r),zeros(Float64,r);
         M_BUG = transpose(X1) * X;
 
         # L-step
@@ -661,7 +661,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         # K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
         X1,STmp = qr([aRad * c .* inv(SigmaA) * psi_avg * deltao *  T K X]);
         X1 = Matrix(X1);
-        X1[1,:], X1[end,:] = zeros(Float64,2*r+1),zeros(Float64,2*r+1);
+        # X1[1,:], X1[end,:] = zeros(Float64,2*r+1),zeros(Float64,2*r+1);
         M_BUG = transpose(X1) * X;
 
         # L-step
@@ -727,7 +727,7 @@ function solveBUG_rankadaptive(obj::solverMarshak)
         Xap = Matrix(Xap);
         X, R2 = qr([Xap Xrem]);
         X = Matrix(X);
-        X[1,:], X[end,:] = zeros(Float64,rmax+m),zeros(Float64,rmax+m);
+        # X[1,:], X[end,:] = zeros(Float64,rmax+m),zeros(Float64,rmax+m);
         S = zeros(rmax+m,rmax+m);
         S[1:m,1:m] = Sap;
         S[m+1:end,m+1:end] = sigma_hat;
