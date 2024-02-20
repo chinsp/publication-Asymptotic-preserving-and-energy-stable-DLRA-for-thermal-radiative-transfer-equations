@@ -80,7 +80,7 @@ mutable struct Settings
         # println("Number of points for spatial discretisation of micro variable = ",NxC);
 
         # Problem 
-        problem = "1DAbsorberTestcase" #  1DLinearTestcase, 1DAbsorberTestcase
+        problem = "1DLinearTestcase" #  1DLinearTestcase, 1DAbsorberTestcase
 
         # Scattering and absorption coefficients
         sigmaA = 1.0 / 0.926 / 1e-6 / 100.0;
