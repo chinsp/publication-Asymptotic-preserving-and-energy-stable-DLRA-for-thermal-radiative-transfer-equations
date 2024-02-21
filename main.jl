@@ -59,7 +59,7 @@ t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(
 s.r = 5;
 t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
 
-s.r = 15;
+s.r = 100;
 r_BUGH = s.r;
 t_BUGH, h_BUGH, g_BUGH, T_BUGH, energy_BUGH, Resmass_BUGH = solveBUGintegrator(solver);
 
@@ -163,7 +163,7 @@ ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"\mathrm{frBU
 ax6.semilogy(t[2:end],Resmass_BUGH,"--", color = "blue", label = L"\mathrm{frBUG}_{15}");
 ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = L"\mathrm{BUG}");
 ax6.set_xlim([0,s.Tend]);
-ax6.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
+ax6.set_ylabel(L"Relative mass error, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax6.set_xlabel(L"t");
 ax6.legend();
 fig6.canvas.draw();
@@ -256,7 +256,7 @@ ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"\mathrm{
 ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "orange", label = L"\mathrm{frBUG}_{1}");
 ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = L"\mathrm{BUG}");
 ax11.set_xlim([0,s.Tend]);
-ax11.set_ylabel(L"Relative residual mass, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
+ax11.set_ylabel(L"Relative mass error, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax11.set_xlabel(L"t");
 ax11.legend();
 fig11.canvas.draw();
