@@ -171,7 +171,7 @@ end
 
 function BCT(obj::solverMarshak,T::Array)
     if obj.settings.problem == "1DLinearTestcase"
-        T[1],T[end] = 0.0,0.0;
+        # T[1],T[end] = 0.0,0.0;
     end
     return T;
 end
@@ -189,7 +189,7 @@ function BCh(obj::solverMarshak,h::Array,T::Array)
     c = obj.settings.c;
     epsilon = obj.settings.epsilon;
     if obj.settings.problem == "1DLinearTestcase"
-        h[1],h[end] = -1/epsilon^2 * aRad * c * T[1],-1/epsilon^2 * aRad * c * T[end];
+        # h[1],h[end] = -1/epsilon^2 * aRad * c * T[1],-1/epsilon^2 * aRad * c * T[end];
     elseif obj.settings.problem == "1DAbsorberTestcase"
         # h[1],h[end] = -1/epsilon^2 * aRad * c * T[1],-1/epsilon^2 * aRad * c * T[end];
     end
