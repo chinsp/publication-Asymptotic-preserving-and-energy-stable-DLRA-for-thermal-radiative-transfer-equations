@@ -131,7 +131,7 @@ struct solverMarshak
         end
         # set up spatial stencil matrices
         Dx = Tridiagonal(-ones(NxC-1)./dx/2.0,zeros(NxC),ones(NxC-1)./dx/2.0) # central difference matrix
-        Dxx = Tridiagonal(ones(NxC-1)./dx/2.0,-ones(NxC)./dx,ones(NxC-1)./dx/2.0) # stabilization matrix
+        Dxx = Tridiagonal(ones(NxC-1)./dx/2.0,-ones(NxC)./dx,ones(NxC-1)./dx/2.0) # stabilization stencil matrix
 
         # Stencil matrices for limiting diffusion equation
         deltao = zeros(NxC, Nx);
@@ -170,14 +170,14 @@ function setupIC(obj::solverMarshak)
 end
 
 function BCT(obj::solverMarshak,T::Array)
-    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
-        T[1],T[end] = 0,0;
+    if obj.settings.problem == "1DLinearTestcase"
+        T[1],T[end] = 0.0,0.0;
     end
     return T;
 end
 
 function BCg(obj::solverMarshak,g::Array)
-    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
+    if obj.settings.problem == "1DLinearTestcase"
         g[1,:] = zeros(obj.settings.N);
         g[end,:] = zeros(obj.settings.N);
     end
@@ -188,8 +188,10 @@ function BCh(obj::solverMarshak,h::Array,T::Array)
     aRad = obj.settings.aRad;
     c = obj.settings.c;
     epsilon = obj.settings.epsilon;
-    if obj.settings.problem == "1DLinearTestcase" || obj.settings.problem == "1DAbsorberTestcase"
-        h[1],h[end] = 0,0; # -1/epsilon^2 .* aRad * c * T[1],-1/epsilon^2 .* aRad * c * T[end];
+    if obj.settings.problem == "1DLinearTestcase"
+        h[1],h[end] = -1/epsilon^2 * aRad * c * T[1],-1/epsilon^2 * aRad * c * T[end];
+    elseif obj.settings.problem == "1DAbsorberTestcase"
+        # h[1],h[end] = -1/epsilon^2 * aRad * c * T[1],-1/epsilon^2 * aRad * c * T[end];
     end
     return h;
 end
@@ -233,8 +235,8 @@ function AbsorpMatrix(obj::solverMarshak)
     INx = I(obj.settings.Nx);
     INxC = I(obj.settings.NxC);
     if obj.settings.problem == "1DAbsorberTestcase"
-        SigmaA = obj.sigmaA*INxC;
-        SigmaAf = obj.sigmaA*INx;
+        SigmaA = obj.sigmaA*diagm(ones(obj.settings.NxC));
+        SigmaAf = obj.sigmaA*diagm(ones(obj.settings.Nx));
         alim = obj.settings.alim;
         ## Implementation for an absorber in the middle of the domain
         for j = 1:obj.settings.NxC
@@ -324,6 +326,11 @@ function solveRosselandLimit(obj::solverMarshak)
     return t, T
 end
 
+py"""
+import numpy
+def qr(A):
+    return numpy.linalg.qr(A)
+"""
 
 function solveFullMacroMicro(obj::solverMarshak)
     t = 0.0;
@@ -395,13 +402,13 @@ function solveFullMacroMicro(obj::solverMarshak)
         g .= 1 /c .* g .- dt .* Dx * g * transpose(A) ./ epsilon .+ dt .* Dxx * g * transpose(absA) ./ epsilon .- aRad * c* dt / epsilon^2 .* psi_avg * deltao * T * transpose(b) .- dt .* deltao * h * transpose(b);
         g .= Beta * g;
         # Boundary condition
-        g .= BCg(obj,g);
+        g .= c.*BCg(obj,g);
 
         ## Meso Update
         alpha_n .= inv(1 / c * INx + dt*aRad*kappa/epsilon^2 * SigmaAf * psi_f + dt*SigmaAf ./epsilon^2);
         h .= 1 / c .* h .- gamma1 * dt  /2 /epsilon^2 .* Do * g * e1;
         h .=  alpha_n * h;
-        h .= BCh(obj,h,T);
+        h .= c.*BCh(obj,h,T);
         
         ## Macro update
         T .= T + dt * kappa .* SigmaAf * h;
@@ -473,10 +480,8 @@ function solveBUGintegrator(obj::solverMarshak)
     mass_0 = sum((aRad*c*T + epsilon^2 .* h) + c_nu*c/2 .* T) * dx;
 
     X0,s,V0 = svd(g);
-    X0 = Matrix(X0);
     X = X0[:,1:r];
-    V1 = Matrix(V0);
-    V = V1[:,1:r];
+    V = V0[:,1:r];
     S = diagm(s[1:r]);
     K = zeros(size(X));
     L = zeros(size(transpose(V)));
@@ -493,7 +498,7 @@ function solveBUGintegrator(obj::solverMarshak)
     psi_avg = diagm([psi_f[1,1];psi_aux;psi_f[end,end]]);
 
     ## Initialising matrices used for computation
-    Beta_K = inv(1 / c .* INxC + dt*SigmaA ./epsilon^2);
+    Beta_K = 1 / c .* INxC + dt*SigmaA ./epsilon^2;
     alpha_n = diagm(zeros(Nx));
     Nt = Int(round(Tend/dt));
 
@@ -503,6 +508,7 @@ function solveBUGintegrator(obj::solverMarshak)
     
     ## Checking for mass conservation
     mass = zeros(Float64,Nt);
+    abc = zeros(Float64,Nt);
 
     PrintSolverInformation(obj,"BUG solver",dt)
     println("Running modal macro-micro BUG solver:")
@@ -510,47 +516,56 @@ function solveBUGintegrator(obj::solverMarshak)
         ## Micro Update
         # K-step 
         K = X * S;
-        K .= 1 / c .* K .- dt / epsilon .* Dx * K * transpose(V) * transpose(A) * V .+ dt / epsilon .* Dxx * K * transpose(V) * transpose(absA) * V - dt * aRad * c /epsilon^2 .* psi_avg * deltao *  T * transpose(b) * V - dt .* deltao * h * transpose(b) * V;
-        K .= Beta_K * K;
+        VAV = transpose(V) * transpose(A) * V;
+        VabsAV = transpose(V) * transpose(absA) * V;
+        K = 1 / c .* K .- dt / epsilon .* Dx * K * VAV .+ dt / epsilon .* Dxx * K * VabsAV .- dt * aRad * c /epsilon^2 .* psi_avg * deltao *  T * transpose(b) * V .- dt .* deltao * h * transpose(b) * V;
+        K = Beta_K \ K;
         # BC condition
         # K[1,:],K[end,:] = zeros(Float64,r),zeros(Float64,r);
-        X1,STmp = qr(K);
+        X1,_ = qr(K);
         X1 = Matrix(X1);
         X1[1,:],X1[end,:] = zeros(Float64,r),zeros(Float64,r);
         M_BUG = transpose(X1) * X;
 
         # L-step
-        L .= S * transpose(V);
-        Beta_L = inv(1 / c .* I(r) + dt/epsilon^2 .* transpose(X) * SigmaA * X);
-        L .= 1 / c .* L .- dt / epsilon .* transpose(X) * Dx * X * L * transpose(A) .+ dt / epsilon .* transpose(X) * Dxx * X * L * transpose(absA) - dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) - dt .* transpose(X) * deltao * h * transpose(b);
-        L .= Beta_L * L;
-        V1, STmp = qr(transpose(L));
+        L = S * transpose(V);
+        Beta_L = (1 / c .* I(r) + dt/epsilon^2 .* transpose(X) * SigmaA * X);
+        
+        L = 1 / c .* L .- dt / epsilon .* transpose(X) * Dx * X * L * transpose(A) .+ dt / epsilon .* transpose(X) * Dxx * X * L * transpose(absA) .- dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) .- dt .* transpose(X) * deltao * h * transpose(b);
+        for k = 1:N
+            L[:,k] = Beta_L \ L[:,k];
+        end
+        # L = Beta_L * L;
+        V1,_ = qr(transpose(L));
         V1 = Matrix(V1);
         N_BUG = transpose(V1) * V;
+        # Update X,V
+        X = X1;
+        V = V1;
 
         #S-step
-        Beta_S = inv(1 / c .* I(r) + dt/epsilon^2 .* transpose(X1) * SigmaA * X1);
-        S .= M_BUG * S * transpose(N_BUG);
-        S .= 1 / c .* S .- dt / epsilon .* transpose(X1) * Dx * X1 * S * transpose(V1) * transpose(A) * V1 .+ dt / epsilon .* transpose(X1) * Dxx * X1 * S * transpose(V1) * transpose(absA) * V1 - dt * aRad * c /epsilon^2 .* transpose(X1) * psi_avg * deltao * T * transpose(b) * V1 - dt .* transpose(X1) * deltao * h * transpose(b) * V1
-        S .= Beta_S * S;
-
-        # Update X,V
-        X .= X1;
-        V .= V1;
+        Beta_S = (1 / c .* I(r) + dt/epsilon^2 .* transpose(X) * SigmaA * X);
+        S = M_BUG * S * transpose(N_BUG);
+        S = 1 / c .* S .- dt / epsilon .* transpose(X) * Dx * X * S * transpose(V) * transpose(A) * V .+ dt / epsilon .* transpose(X) * Dxx * X * S * transpose(V) * transpose(absA) * V .- dt * aRad * c /epsilon^2 .* transpose(X) * psi_avg * deltao * T * transpose(b) * V .- dt .* transpose(X) * deltao * h * transpose(b) * V;
+        for k = 1:r
+            S[:,k] = Beta_S \ S[:,k];
+        end
+        # S = Beta_S * S;
+  
 
         ## Meso Update
-        alpha_n = inv(1 / c * INx + dt*aRad*kappa/epsilon^2 * SigmaAf * psi_f + dt*SigmaAf ./epsilon^2);
-        h .= 1 / c .* h .- gamma1 * dt  /2 /epsilon^2 .* Do * X * S * transpose(V) * e1;
-        h .=  alpha_n * h;
-        h .= BCh(obj,h,T);
+        alpha_n = (1 / c * INx + dt*aRad*kappa/epsilon^2 * SigmaAf * psi_f + dt*SigmaAf./epsilon^2);
+        h = 1 / c .* h .- gamma1 * dt  /2 /epsilon^2 .* Do * X * S * transpose(V) * e1;
+        h =  alpha_n \ h;
+        h = BCh(obj,h,T);
         
         ## Macro update
-        T .= T + dt * kappa .* SigmaAf * h;
+        T = T .+ dt * kappa .* SigmaAf * h;
         # Boundary conditions
-        T .= BCT(obj,T);
+        T = BCT(obj,T);
 
         ## Update gradient of Planckian
-        psi_f .= diagm(DTPlanck(obj,T,LinTyp)); # For the non-linear system
+        psi_f = diagm(DTPlanck(obj,T,LinTyp)); # For the non-linear system
         psi_aux = zeros(Nx-1);
         for i = 1:Nx-1
             psi_aux[i] = (psi_f[i,i] + psi_f[i+1,i+1])/2;
@@ -564,10 +579,10 @@ function solveBUGintegrator(obj::solverMarshak)
         mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
         mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
         # mass_0 = mass_n;
-
+        abc[k] = sum(Do * X * S * transpose(V) * e1);
         t = t + dt;
     end
-    return t, h, X*S*transpose(V), T, energy, mass;
+    return t, h, X*S*transpose(V), T, energy, mass,abc;
 end
 
 
