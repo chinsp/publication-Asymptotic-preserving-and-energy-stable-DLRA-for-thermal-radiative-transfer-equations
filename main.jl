@@ -13,8 +13,8 @@ rcParams["font.size"] = 30
 close("all")
 
 #########################################################################
-# For running the absorber test case change the variable absorber to    #
-# true in the settings.jl file in line 119. The default is false.       # 
+# For running the absorber test case change the problem to              #
+# 1DAbsorberTestcaseabsorber in the settings.jl file.                   # 
 #  Note: Running the abosrber test case overwrites the current plots    #        
 #########################################################################
 
@@ -57,11 +57,11 @@ solver = solverMarshak(s);
 t_Full, h_Full, g_Full, T_Full, energy_Full, Resmass_Full = solveFullMacroMicro(solver);
 
 s.r = 5;
-t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG,abc = solveBUGintegrator(solver);
+t_BUG, h_BUG, g_BUG, T_BUG, energy_BUG, Resmass_BUG = solveBUGintegrator(solver);
 
 s.r = 15;
 r_BUGH = s.r;
-t_BUGH, h_BUGH, g_BUGH, T_BUGH, energy_BUGH, Resmass_BUGH,abc = solveBUGintegrator(solver);
+t_BUGH, h_BUGH, g_BUGH, T_BUGH, energy_BUGH, Resmass_BUGH = solveBUGintegrator(solver);
 
 s.r = 1;
 t_raBUG, h_raBUG, g_raBUG, T_raBUG, energy_raBUG, ranks_raBUG, Resmass_raBUG = solveBUG_rankadaptive(solver);

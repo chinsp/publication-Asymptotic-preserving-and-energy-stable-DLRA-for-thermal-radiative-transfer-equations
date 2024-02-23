@@ -508,7 +508,6 @@ function solveBUGintegrator(obj::solverMarshak)
     
     ## Checking for mass conservation
     mass = zeros(Float64,Nt);
-    abc = zeros(Float64,Nt);
 
     PrintSolverInformation(obj,"BUG solver",dt)
     println("Running modal macro-micro BUG solver:")
@@ -579,10 +578,10 @@ function solveBUGintegrator(obj::solverMarshak)
         mass_n = sum((aRad*c*T .+ epsilon^2 .* h) .+ c_nu*c/2 .* T) * dx;
         mass[k] = abs(mass_0 - mass_n)/abs(mass_0);
         # mass_0 = mass_n;
-        abc[k] = sum(Do * X * S * transpose(V) * e1);
+
         t = t + dt;
     end
-    return t, h, X*S*transpose(V), T, energy, mass,abc;
+    return t, h, X*S*transpose(V), T, energy, mass;
 end
 
 
