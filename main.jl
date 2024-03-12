@@ -69,11 +69,11 @@ t_raBUG, h_raBUG, g_raBUG, T_raBUG, energy_raBUG, ranks_raBUG, Resmass_raBUG = s
 
 x1 = collect(range(s.a,s.b,size(T)[1]));
 
-fig1, ax1 = subplots(figsize=(15, 12), dpi=200);
-ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax1.plot(solver.x, T_Full ,"--",color = "red", label = string(L"\mathrm{P}_{100}"));
-ax1.plot(solver.x, T_5 ,"--",color = "green", label = string(L"\mathrm{P}_{5}"));
-ax1.plot(solver.x, T_15 ,"--",color = "brown", label = string(L"\mathrm{P}_{15}"));
+fig1, ax1 = subplots(figsize=(15, 12), dpi=300);
+ax1.plot(x1, T,color = "black", "--", label = "Rosseland limit",linewidth=2);
+ax1.plot(solver.x, T_Full ,"--",color = "red", label = string(L"\mathrm{P}_{100}"),linewidth=2);
+ax1.plot(solver.x, T_5 ,"--",color = "green", label = string(L"\mathrm{P}_{5}"),linewidth=2);
+ax1.plot(solver.x, T_15 ,"--",color = "brown", label = string(L"\mathrm{P}_{15}"),linewidth=2);
 ax1.set_ylim([minimum(T_Full)-1.0,maximum(T_Full)+5.0]);
 ax1.set_xlim([0,3]);
 ax1.set_xticks(range(0,3, step=0.5));
@@ -84,12 +84,12 @@ fig1.canvas.draw();
 fig1
 savefig("Temperature_moment_hyperbolic.pdf")
 
-fig2, ax2 = subplots(figsize=(15, 12), dpi=200);
+fig2, ax2 = subplots(figsize=(15, 12), dpi=300);
 ax2.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax2.plot(solver.x, T_Full ,"--",color = "red", label = string(L"\mathrm{P}_{100}"));
-ax2.plot(solver.x, T_BUG ,"--",color = "orange", label = string(L"\mathrm{frBUG}_{5}"));
-ax2.plot(solver.x, T_BUGH,"--",color = "blue", label = string(L"\mathrm{frBUG}_{15}"));
-ax2.plot(solver.x, T_raBUG ,"--",color = "purple", label = string(L"\mathrm{BUG}"));
+ax2.plot(solver.x, T_Full ,"--",color = "red", label = string(L"\mathrm{P}_{100}"),linewidth=2);
+ax2.plot(solver.x, T_BUG ,"--",color = "green", label = string(L"\mathrm{frBUG}_{5}"),linewidth=2);
+ax2.plot(solver.x, T_BUGH,"--",color = "blue", label = string(L"\mathrm{frBUG}_{15}"),linewidth=2);
+ax2.plot(solver.x, T_raBUG ,"--",color = "purple", label = string(L"\mathrm{BUG}"),linewidth=2);
 ax2.set_xlim([0,3]);
 ax2.set_xticks(range(0,3, step=0.5));
 ax2.set_ylabel("Temperature");
@@ -100,10 +100,10 @@ fig2
 savefig("Temperature_low_rank_hyperbolic.pdf")
 
 
-fig3, ax3 = subplots(figsize=(15, 12), dpi=200);
-ax3.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"\mathrm{P}_{100}");
-ax3.plot(solver.x, (s.aRad * s.c .* T_5 + epsilon^2 .* h_5),"--",color = "green", label = L"\mathrm{P}_{5}");
-ax3.plot(solver.x, (s.aRad * s.c .* T_15 + epsilon^2 .* h_15),"--",color = "brown", label = L"\mathrm{P}_{15}");
+fig3, ax3 = subplots(figsize=(15, 12), dpi=300);
+ax3.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax3.plot(solver.x, (s.aRad * s.c .* T_5 + epsilon^2 .* h_5),"--",color = "green", label = L"\mathrm{P}_{5}",linewidth=2);
+ax3.plot(solver.x, (s.aRad * s.c .* T_15 + epsilon^2 .* h_15),"--",color = "brown", label = L"\mathrm{P}_{15}",linewidth=2);
 ax3.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
 ax3.set_xlim([0,3]);
 ax3.set_xticks(range(0,3, step=0.5));
@@ -114,13 +114,13 @@ fig3.canvas.draw();
 fig3
 savefig("Scalar_flux_moment_hyperbolic.pdf")
 
-fig4, ax4 = subplots(figsize=(15, 12), dpi=200);
-ax4.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"\mathrm{P}_{100}");
+fig4, ax4 = subplots(figsize=(15, 12), dpi=300);
+ax4.plot(solver.x, (s.aRad * s.c .* T_Full + epsilon^2 .* h_Full),"--",color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
 
-ax4.plot(solver.x, (s.aRad * s.c .* T_BUG + epsilon^2 .* h_BUG),"--",color = "orange", label = L"\mathrm{frBUG}_{5}");
-ax4.plot(solver.x, (s.aRad * s.c .* T_BUGH + epsilon^2 .* h_BUGH),"--",color = "blue", label = L"\mathrm{frBUG}_{15}");
+ax4.plot(solver.x, (s.aRad * s.c .* T_BUG + epsilon^2 .* h_BUG),"--",color = "green", label = L"\mathrm{frBUG}_{5}",linewidth=2);
+ax4.plot(solver.x, (s.aRad * s.c .* T_BUGH + epsilon^2 .* h_BUGH),"--",color = "blue", label = L"\mathrm{frBUG}_{15}",linewidth=2);
 
-ax4.plot(solver.x, (s.aRad * s.c .* T_raBUG + epsilon^2 .* h_raBUG),"--",color = "purple", label = L"\mathrm{BUG}");
+ax4.plot(solver.x, (s.aRad * s.c .* T_raBUG + epsilon^2 .* h_raBUG),"--",color = "purple", label = L"\mathrm{BUG}",linewidth=2);
 
 ax4.set_ylim([minimum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)-1.0,maximum(s.aRad * s.c .* T_Full + epsilon^2 .* h_Full)+5.0]);
 ax4.set_xlim([0,3]);
@@ -137,16 +137,16 @@ t = collect(range(0,s.Tend,size(energy_Full)[1]));
 t1 = collect(range(0,s.Tend,size(energy_5)[1]));
 t2 = collect(range(0,s.Tend,size(energy_15)[1]));
 
-fig5, ax5 = subplots(figsize=(15, 12), dpi=200);
+fig5, ax5 = subplots(figsize=(15, 12), dpi=300);
 start = 1;
-ax5.semilogy(t[start:end],energy_Full[start:end],"--",color = "red", label = L"\mathrm{P}_{100}");
-ax5.semilogy(t1[start:end],energy_5[start:end],"--",color = "green", label = L"\mathrm{P}_{5}");
-ax5.semilogy(t2[start:end],energy_15[start:end],"--",color = "brown", label = L"\mathrm{P}_{15}");
+ax5.semilogy(t[start:end],energy_Full[start:end],"--",color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax5.semilogy(t1[start:end],energy_5[start:end],"--",color = "green", label = L"\mathrm{P}_{5}",linewidth=2);
+ax5.semilogy(t2[start:end],energy_15[start:end],"--",color = "brown", label = L"\mathrm{P}_{15}",linewidth=2);
 
-ax5.semilogy(t[start:end],energy_BUG[start:end],"--",color = "orange", label = L"\mathrm{frBUG}_{5}");
-ax5.semilogy(t[start:end],energy_BUGH[start:end],"--",color = "blue", label = L"\mathrm{frBUG}_{15}");
+ax5.semilogy(t[start:end],energy_BUG[start:end],"--",color = "green", label = L"\mathrm{frBUG}_{5}",linewidth=2);
+ax5.semilogy(t[start:end],energy_BUGH[start:end],"--",color = "blue", label = L"\mathrm{frBUG}_{15}",linewidth=2);
 
-ax5.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = L"\mathrm{BUG}");
+ax5.semilogy(t[start:end],energy_raBUG[start:end],"--",color = "purple",label = L"\mathrm{BUG}",linewidth=2);
 
 ax5.legend();
 ax5.set_xlim([0,s.Tend]);
@@ -157,11 +157,11 @@ fig5
 savefig("energy_hyperbolic.pdf", bbox_inches="tight")
 
 
-fig6,ax6 = subplots(figsize = (15,12),dpi=200);
-ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"\mathrm{P}_{100}");
-ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "orange", label = L"\mathrm{frBUG}_{5}");
-ax6.semilogy(t[2:end],Resmass_BUGH,"--", color = "blue", label = L"\mathrm{frBUG}_{15}");
-ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = L"\mathrm{BUG}");
+fig6,ax6 = subplots(figsize = (15,12),dpi=300);
+ax6.semilogy(t[2:end],Resmass_Full,"--", color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax6.semilogy(t[2:end],Resmass_BUG,"--", color = "green", label = L"\mathrm{frBUG}_{5}",linewidth=2);
+ax6.semilogy(t[2:end],Resmass_BUGH,"--", color = "blue", label = L"\mathrm{frBUG}_{15}",linewidth=2);
+ax6.semilogy(t[2:end],Resmass_raBUG,"--", color = "purple", label = L"\mathrm{BUG}",linewidth=2);
 ax6.set_xlim([0,s.Tend]);
 ax6.set_ylabel(L"Relative mass error, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax6.set_xlabel(L"t");
@@ -171,8 +171,8 @@ fig6
 savefig("Rel_residual_mass_hyperbolic.pdf", bbox_inches="tight")
 
 
-fig7, ax7 = subplots(figsize=(15, 12), dpi=200);
-ax7.plot(t[1:end],ranks_raBUG,"-",color = "purple", label = "rank");
+fig7, ax7 = subplots(figsize=(15, 12), dpi=300);
+ax7.plot(t[1:end],ranks_raBUG,"-",color = "purple", label = "rank",linewidth=2);
 
 ax7.set_xlim([0,s.Tend]);
 ax7.set_ylim([0,maximum(ranks_raBUG)+1]);
@@ -205,11 +205,11 @@ t_raBUG_diff, h_raBUG_diff, g_raBUG_diff, T_raBUG_diff, energy_raBUG_diff, ranks
 
 
 
-fig8, ax8 = subplots(figsize=(15, 12), dpi=200);
-ax8.plot(x1, s.aRad * s.c * T,color = "black", "--", label = "Rosseland limit");
-ax8.plot(solver.x, (s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff),"--",color = "red", label = L"\mathrm{P}_{100}");
-ax8.plot(solver.x, (s.aRad * s.c .* T_BUG_diff + epsilon^2 .* h_BUG_diff),"--",color = "orange", label = L"\mathrm{frBUG}_{1}");
-ax8.plot(solver.x, (s.aRad * s.c .* T_raBUG_diff + epsilon^2 .* h_raBUG_diff),"--",color = "purple", label = L"\mathrm{BUG}");
+fig8, ax8 = subplots(figsize=(15, 12), dpi=300);
+ax8.plot(x1, s.aRad * s.c * T,color = "black", "--", label = "Rosseland limit",linewidth=2);
+ax8.plot(solver.x, (s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff),"--",color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax8.plot(solver.x, (s.aRad * s.c .* T_BUG_diff + epsilon^2 .* h_BUG_diff),"--",color = "green", label = L"\mathrm{frBUG}_{1}",linewidth=2);
+ax8.plot(solver.x, (s.aRad * s.c .* T_raBUG_diff + epsilon^2 .* h_raBUG_diff),"--",color = "purple", label = L"\mathrm{BUG}",linewidth=2);
 ax8.set_ylim([minimum(s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff)-1.0,maximum(s.aRad * s.c .* T_Full_diff + epsilon^2 .* h_Full_diff)+5.0]);
 ax8.set_xlim([0,3]);
 ax8.set_xticks(range(0,3, step=0.5));
@@ -220,11 +220,11 @@ fig8.canvas.draw();
 fig8
 savefig("Scalar_flux_diffusive.pdf")
 
-fig9, ax9 = subplots(figsize=(15, 12), dpi=200);
-ax9.plot(x1, T,color = "black", "--", label = "Rosseland limit");
-ax9.plot(solver.x, T_Full_diff ,"--",color = "red", label = string(L"\mathrm{P}_{100}"));
-ax9.plot(solver.x, T_BUG_diff ,"--",color = "orange", label = string(L"\mathrm{frBUG}_{1}"));
-ax9.plot(solver.x, T_raBUG_diff ,"--",color = "purple", label = string(L"\mathrm{BUG}"));
+fig9, ax9 = subplots(figsize=(15, 12), dpi=300);
+ax9.plot(x1, T,color = "black", "--", label = "Rosseland limit",linewidth=2);
+ax9.plot(solver.x, T_Full_diff ,"--",color = "red", label = string(L"\mathrm{P}_{100}"),linewidth=2);
+ax9.plot(solver.x, T_BUG_diff ,"--",color = "green", label = string(L"\mathrm{frBUG}_{1}"),linewidth=2);
+ax9.plot(solver.x, T_raBUG_diff ,"--",color = "purple", label = string(L"\mathrm{BUG}"),linewidth=2);
 ax9.set_ylim([minimum(T_Full_diff)-1.0,maximum(T_Full_diff)+5.0]);
 ax9.set_xlim([0,3]);
 ax9.set_xticks(range(0,3, step=0.5));
@@ -237,11 +237,11 @@ savefig("Temperature_diffusive.pdf")
 
 t = collect(range(0,s.Tend,size(energy_Full_diff)[1]));
 
-fig10, ax10 = subplots(figsize=(15, 12), dpi=200);
+fig10, ax10 = subplots(figsize=(15, 12), dpi=300);
 start = 1;
-ax10.semilogy(t[start:end],energy_Full_diff[start:end],"--",color = "red", label = L"\mathrm{P}_{100}");
-ax10.semilogy(t[start:end],energy_BUG_diff[start:end],"--",color = "orange", label = L"\mathrm{frBUG}_{1}");
-ax10.semilogy(t[start:end],energy_raBUG_diff[start:end],"--",color = "purple",label = L"\mathrm{BUG}");
+ax10.semilogy(t[start:end],energy_Full_diff[start:end],"--",color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax10.semilogy(t[start:end],energy_BUG_diff[start:end],"--",color = "green", label = L"\mathrm{frBUG}_{1}",linewidth=2);
+ax10.semilogy(t[start:end],energy_raBUG_diff[start:end],"--",color = "purple",label = L"\mathrm{BUG}",linewidth=2);
 ax10.legend();
 ax10.set_xlim([0,s.Tend]);
 ax10.set_ylabel("energy");
@@ -251,10 +251,10 @@ fig10
 savefig("energy_diffusive.pdf", bbox_inches="tight")
 
 
-fig11,ax11 = subplots(figsize = (15,12),dpi=200);
-ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"\mathrm{P}_{100}");
-ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "orange", label = L"\mathrm{frBUG}_{1}");
-ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = L"\mathrm{BUG}");
+fig11,ax11 = subplots(figsize = (15,12),dpi=300);
+ax11.semilogy(t[2:end],Resmass_Full_diff,"--", color = "red", label = L"\mathrm{P}_{100}",linewidth=2);
+ax11.semilogy(t[2:end],Resmass_BUG_diff,"--", color = "green", label = L"\mathrm{frBUG}_{1}",linewidth=2);
+ax11.semilogy(t[2:end],Resmass_raBUG_diff,"--", color = "purple", label = L"\mathrm{BUG}",linewidth=2);
 ax11.set_xlim([0,s.Tend]);
 ax11.set_ylabel(L"Relative mass error, $ \frac{|m^{0} - m^{n}|}{|m^{0}|} $");
 ax11.set_xlabel(L"t");
@@ -263,8 +263,8 @@ fig11.canvas.draw();
 fig11
 savefig("Rel_residual_mass_diffusive.pdf", bbox_inches="tight")
 
-fig12, ax12 = subplots(figsize=(15, 12), dpi=200);
-ax12.plot(t[1:end],ranks_raBUG_diff,"-",color = "purple", label = "rank");
+fig12, ax12 = subplots(figsize=(15, 12), dpi=300);
+ax12.plot(t[1:end],ranks_raBUG_diff,"-",color = "purple", label = "rank",linewidth=2);
 ax12.set_xlim([0,s.Tend]);
 ax12.set_ylim([0,maximum(ranks_raBUG_diff)+1]);
 ax12.set_yticks(range(1,maximum(ranks_raBUG_diff)+1,step=2))
